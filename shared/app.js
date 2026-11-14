@@ -844,11 +844,14 @@ function route(){
 /* book-vs-corrected inline switch: <div class="seg"><button data-bkfix="k" data-bkv="book">…<button data-bkfix="k" data-bkv="fixed">…</div>; content: class bkb / bkf with data-bk="k" */
 B.bkOn=k=>document.documentElement.getAttribute('data-bk-'+k)==='fixed';
 B.bkCtl=(k,lbl)=>{const f=B.bkOn(k);return `<span class="bkctl">${lbl?`<span class="sub">${lbl}</span>`:''}<span class="seg" role="group"><button data-bkfix="${k}" data-bkv="book" aria-pressed="${!f}">كما في الكتاب</button><button data-bkfix="${k}" data-bkv="fixed" aria-pressed="${f}">المصحح</button></span></span>`};
-document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-bkfix]');if(!b)return;const k=b.dataset.bkfix,f=b.dataset.bkv==='fixed';
+B.bkSet=(k,f)=>{
   if(!document.getElementById('bkst-'+k)){const st=document.createElement('style');st.id='bkst-'+k;const h=`html[data-bk-${k}="fixed"]`;
     st.textContent=`${h} .bkf:not(.fx-chip)[data-bk="${k}"]{display:inline}${h} .bkf.blk:not(.fx-chip)[data-bk="${k}"]{display:block}${h} .bkb[data-bk="${k}"]{display:none}html[data-hidefix][data-bk-${k}="fixed"] .fx-chip.bkf[data-bk="${k}"]{display:block}html[data-hidefix][data-bk-${k}="fixed"] span.fx-chip.bkf:not(.blk)[data-bk="${k}"]{display:inline-block}${h} .seg button[data-bkfix="${k}"][data-bkv="fixed"]{background:var(--blue);color:#fff}${h} .seg button[data-bkfix="${k}"][data-bkv="book"]{background:var(--surface);color:var(--muted)}`;document.head.appendChild(st)}
   document.documentElement.setAttribute('data-bk-'+k,f?'fixed':'book');
-  document.querySelectorAll(`[data-bkfix="${k}"]`).forEach(x=>x.setAttribute('aria-pressed',String((x.dataset.bkv==='fixed')===f)))});
+  document.querySelectorAll(`[data-bkfix="${k}"]`).forEach(x=>x.setAttribute('aria-pressed',String((x.dataset.bkv==='fixed')===f)))};
+/* a switch can start on «المصحح» (coordinator decision for safety-critical content): B.bkDefault('key') */
+B.bkDefault=k=>{if(!document.documentElement.hasAttribute('data-bk-'+k))B.bkSet(k,true)};
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-bkfix]');if(!b)return;B.bkSet(b.dataset.bkfix,b.dataset.bkv==='fixed')});
 /* hideable correction notes: any element with class "fixnote" (the explanation that the book is wrong, shown in «المصحح»)
    gets a small «إخفاء الشرح» button; when hidden (remembered on this device for the whole site) a small «لماذا؟» chip shows instead */
 (function(){
